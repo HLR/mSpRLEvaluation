@@ -85,10 +85,9 @@ public class Main {
         }
     }
 
-
     private static void readArgs(String[] args) {
         if (args.length != 4) {
-            error("Usage: SpRL2017 actual.xml predicted.xml output.txt matching(o:overlap/e:exact)");
+            error("Usage: mSpRL2017 actual.xml predicted.xml output.txt matching(o:overlap/e:exact)");
         }
 
         actualFile = args[0];
