@@ -86,6 +86,10 @@ public class XmlSpRLEvaluator {
                     int spEnd = sp == null ? -1 : offset + sp.getEnd();
 
                     RelationEval eval = new RelationEval(trStart, trEnd, spStart, spEnd, lmStart, lmEnd);
+                    eval.setFoR(r.getFoR());
+                    eval.setGeneralType(r.getGeneralType());
+                    eval.setRCC8(r.getRCC8Value());
+                    eval.setSpecificType(r.getSpecificType());
                     relations.add(eval);
                 }
         return new RelationsEvalDocument(relations);

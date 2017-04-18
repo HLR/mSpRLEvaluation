@@ -33,16 +33,34 @@ public class Main {
     public static void main(String[] args) throws IOException {
         readArgs(args);
         XmlSpRLEvaluator xmlEvaluator = new XmlSpRLEvaluator(actualFile, predictedFile, comparer);
+        SpRLEvaluator evaluator = new SpRLEvaluator();
 
         List<SpRLEvaluation> roleResults = xmlEvaluator.evaluateRoles();
-        SpRLEvaluator.printEvaluation(roleResults);
-        SpRLEvaluator.printEvaluation(outputStream, roleResults);
+        printResults("Role results", roleResults);
 
         List<SpRLEvaluation> relationResults = xmlEvaluator.evaluateRelations();
-        SpRLEvaluator.printEvaluation(relationResults);
-        SpRLEvaluator.printEvaluation(outputStream, relationResults);
+        printResults("Relation results", relationResults);
+
+        SpRLEvaluation relEval = relationResults.get(0);
+
+        List<SpRLEvaluation> generalTypeResults = evaluator.evaluateRelationGeneralType(relEval);
+        printResults("General Type results", generalTypeResults);
+
+        List<SpRLEvaluation> specificTypeResults = evaluator.evaluateRelationSpecificType(relEval);
+        printResults("Specific Type results", specificTypeResults);
+
+        List<SpRLEvaluation> rcc8Results = evaluator.evaluateRelationRCC8(relEval);
+        printResults("RCC8 results", rcc8Results);
+
+        List<SpRLEvaluation> forResults = evaluator.evaluateRelationFoR(relEval);
+        printResults("FoR results", forResults);
 
         outputStream.close();
+    }
+
+    private static void printResults(String caption, List<SpRLEvaluation> evals) {
+        SpRLEvaluator.printEvaluation(caption, evals);
+        SpRLEvaluator.printEvaluation(caption, outputStream, evals);
     }
 
     private static void combine(String file1, String file2, String resultFile) {

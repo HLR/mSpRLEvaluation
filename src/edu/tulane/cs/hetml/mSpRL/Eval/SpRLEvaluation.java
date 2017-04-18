@@ -1,5 +1,10 @@
 package edu.tulane.cs.hetml.mSpRL.Eval;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by Taher on 2016-09-20.
  */
@@ -10,6 +15,9 @@ public class SpRLEvaluation {
     private final double f1;
     private final int labeledCount;
     private final int predictedCount;
+    private final List<SpRLEval> fp;
+    private final List<SpRLEval> fn;
+    private final Map<SpRLEval, SpRLEval> tp;
 
     public SpRLEvaluation(String label, double precision, double recall, double f1, int labeledCount, int predictedCount) {
         this.label = label;
@@ -18,6 +26,9 @@ public class SpRLEvaluation {
         this.f1 = f1;
         this.labeledCount = labeledCount;
         this.predictedCount = predictedCount;
+        fp = new ArrayList<>();
+        fn = new ArrayList<>();
+        tp = new HashMap<>();
     }
 
     public String getLabel() {
@@ -42,5 +53,17 @@ public class SpRLEvaluation {
 
     public double getF1() {
         return f1;
+    }
+
+    public List<SpRLEval> getFp() {
+        return fp;
+    }
+
+    public List<SpRLEval> getFn() {
+        return fn;
+    }
+
+    public Map<SpRLEval, SpRLEval> getTp() {
+        return tp;
     }
 }

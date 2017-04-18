@@ -3,19 +3,26 @@ package edu.tulane.cs.hetml.mSpRL.Eval;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Taher on 2016-09-20.
  */
 public class SpRLEvaluator {
 
+    public static void printEvaluation(String caption, List<SpRLEvaluation> eval) {
+        printEvaluation(caption, System.out, eval);
+    }
     public static void printEvaluation(List<SpRLEvaluation> eval) {
         printEvaluation(System.out, eval);
     }
-
+    public static void printEvaluation(String caption, OutputStream outputStream, List<SpRLEvaluation> eval) {
+        PrintStream out = new PrintStream(outputStream, true);
+        out.println(repeat("-", 75));
+        out.println("-  " + caption);
+        out.println(repeat("-", 75));
+        printEvaluation(outputStream, eval);
+    }
     public static void printEvaluation(OutputStream outputStream, List<SpRLEvaluation> eval) {
         PrintStream out = new PrintStream(outputStream, true);
         out.printf("%-20s %-10s %-10s %-10s %-10s %-10s\n",
@@ -68,34 +75,88 @@ public class SpRLEvaluator {
         return evaluations;
     }
 
+    public List<SpRLEvaluation> evaluateRelationGeneralType(SpRLEvaluation relationsEval) {
+        return evaluateRelationType(relationsEval, e -> e.getGeneralType());
+    }
+
+    public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
+        return evaluateRelationType(relationsEval, e -> e.getSpecificType());
+    }
+
+    public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
+        return evaluateRelationType(relationsEval, e -> e.getRCC8());
+    }
+
+    public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {
+        return evaluateRelationType(relationsEval, e -> e.getFoR());
+    }
+
+    private List<SpRLEvaluation> evaluateRelationType(SpRLEvaluation relationsEval, RelationTypeExtractor extractor) {
+        MultiLabelEvaluation evaluation = new MultiLabelEvaluation();
+
+        for (SpRLEval e : relationsEval.getTp().keySet()) {
+            RelationEval a = (RelationEval) e;
+            RelationEval p = (RelationEval) relationsEval.getTp().get(e);
+            String aType = extractor.getType(a);
+            String pType = extractor.getType(p);
+            if (aType.equals(pType)) {
+                evaluation.addTp(aType);
+            } else {
+                evaluation.addFn(aType);
+                evaluation.addFp(pType);
+            }
+        }
+
+        for (SpRLEval e : relationsEval.getFp()) {
+            RelationEval re = (RelationEval) e;
+            evaluation.addFp(extractor.getType(re));
+        }
+
+        for (SpRLEval e : relationsEval.getFn()) {
+            RelationEval re = (RelationEval) e;
+            evaluation.addFn(extractor.getType(re));
+        }
+
+        return evaluation.getEvaluations();
+    }
+
+
     private <T extends SpRLEval> SpRLEvaluation evaluate(String label, List<T> actualList, List<T> predictedList,
                                                          EvalComparer comparer) {
         int tp = 0;
+        List<T> fpList = new ArrayList<>();
+        List<T> fnList = new ArrayList<>();
+        Map<T, T> tpList = new HashMap<>();
         List<T> actual = distinct(actualList);
         List<T> predicted = distinct(predictedList);
         int predictedCount = predicted.size();
         int actualCount = actual.size();
 
-        while (actual.size() > 0) {
-            T a = actual.get(0);
+        for (T a : actual) {
+            boolean labeled = false;
             for (T p : predicted) {
                 if (comparer.isEqual(a, p)) {
                     tp++;
+                    tpList.put(a, p);
                     predicted.remove(p);
+                    labeled = true;
                     break;
                 }
             }
-            actual.remove(a);
+            if (!labeled) {
+                fnList.add(a);
+            }
         }
+        fpList.addAll(predicted);
 
         int fp = predictedCount - tp;
         int fn = actualCount - tp;
-        double precision = tp == 0 ? 0 : (double) tp / (tp + fp) * 100;
-        double recall = tp == 0 ? 0 : (double) tp / (tp + fn) * 100;
-        double f1 = precision == 0 || recall == 0 ? 0 : 2 * precision * recall / (precision + recall);
+        double precision = getPrecision(tp, fp);
+        double recall = getRecall(tp, fn);
+        double f1 = getF1(tp, fp, fn);
 
 
-        return new SpRLEvaluation(
+        SpRLEvaluation evaluation = new SpRLEvaluation(
                 label,
                 precision,
                 recall,
@@ -103,6 +164,24 @@ public class SpRLEvaluator {
                 actualCount,
                 predictedCount
         );
+        evaluation.getFn().addAll(fnList);
+        evaluation.getFp().addAll(fpList);
+        evaluation.getTp().putAll(tpList);
+        return evaluation;
+    }
+
+    public static double getF1(int tp, int fp, int fn) {
+        double precision = getPrecision(tp, fp);
+        double recall = getRecall(tp, fn);
+        return precision == 0 || recall == 0 ? 0 : 2 * precision * recall / (precision + recall);
+    }
+
+    public static double getRecall(int tp, double fn) {
+        return tp == 0 ? 0 : (double) tp / (tp + fn) * 100;
+    }
+
+    public static double getPrecision(int tp, int fp) {
+        return tp == 0 ? 0 : (double) tp / (tp + fp) * 100;
     }
 
     private <T extends SpRLEval> List<T> distinct(List<T> l) {
