@@ -13,9 +13,11 @@ public class SpRLEvaluator {
     public static void printEvaluation(String caption, List<SpRLEvaluation> eval) {
         printEvaluation(caption, System.out, eval);
     }
+
     public static void printEvaluation(List<SpRLEvaluation> eval) {
         printEvaluation(System.out, eval);
     }
+
     public static void printEvaluation(String caption, OutputStream outputStream, List<SpRLEvaluation> eval) {
         PrintStream out = new PrintStream(outputStream, true);
         out.println(repeat("-", 75));
@@ -23,6 +25,7 @@ public class SpRLEvaluator {
         out.println(repeat("-", 75));
         printEvaluation(outputStream, eval);
     }
+
     public static void printEvaluation(OutputStream outputStream, List<SpRLEvaluation> eval) {
         PrintStream out = new PrintStream(outputStream, true);
         out.printf("%-20s %-10s %-10s %-10s %-10s %-10s\n",
@@ -76,19 +79,19 @@ public class SpRLEvaluator {
     }
 
     public List<SpRLEvaluation> evaluateRelationGeneralType(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> e.getGeneralType());
+        return evaluateRelationType(relationsEval, e -> toUpper(e.getGeneralType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> e.getSpecificType());
+        return evaluateRelationType(relationsEval, e -> toUpper(e.getSpecificType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> e.getRCC8());
+        return evaluateRelationType(relationsEval, e -> toUpper(e.getRCC8()));
     }
 
     public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> e.getFoR());
+        return evaluateRelationType(relationsEval, e -> toUpper(e.getFoR()));
     }
 
     private List<SpRLEvaluation> evaluateRelationType(SpRLEvaluation relationsEval, RelationTypeExtractor extractor) {
@@ -196,12 +199,15 @@ public class SpRLEvaluator {
         return newList;
     }
 
-
     private static String repeat(String s, int n) {
         String str = "";
         for (int i = 0; i < n; i++)
             str += s;
         return str;
+    }
+
+    private static String toUpper(String s) {
+        return s == null ? null : s.toUpperCase();
     }
 
 }
