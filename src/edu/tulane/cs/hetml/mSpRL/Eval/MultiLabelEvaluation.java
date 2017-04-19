@@ -42,7 +42,8 @@ public class MultiLabelEvaluation {
                     tp.get(label) + fn.get(label),
                     tp.get(label) + fp.get(label)
             );
-            evaluations.add(eval);
+            if (eval.getLabeledCount() > 0)
+                evaluations.add(eval);
         }
         return evaluations;
     }
@@ -56,5 +57,9 @@ public class MultiLabelEvaluation {
             fn.put(label, 0);
         }
         m.put(label, m.get(label) + 1);
+    }
+
+    public boolean containsLabel(String label) {
+        return tp.containsKey(label);
     }
 }
