@@ -79,19 +79,23 @@ public class SpRLEvaluator {
     }
 
     public List<SpRLEvaluation> evaluateRelationGeneralType(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> toUpper(e.getGeneralType()));
+        return evaluateRelationType(relationsEval, (e, a) -> toUpper(e.getGeneralType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> toUpper(e.getSpecificType()));
+        return evaluateRelationType(relationsEval,
+                (e, isActual) -> isActual && e.getGeneralType()
+                        .equalsIgnoreCase("distance") ? null : toUpper(e.getSpecificType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> toUpper(e.getRCC8()));
+        return evaluateRelationType(relationsEval,
+                (e, isActual) -> isActual && e.getGeneralType()
+                        .equalsIgnoreCase("distance") ? null : toUpper(e.getRCC8()));
     }
 
     public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval, e -> toUpper(e.getFoR()));
+        return evaluateRelationType(relationsEval, (e, a) -> toUpper(e.getFoR()));
     }
 
     private List<SpRLEvaluation> evaluateRelationType(SpRLEvaluation relationsEval, RelationTypeExtractor extractor) {
@@ -100,24 +104,27 @@ public class SpRLEvaluator {
         for (SpRLEval e : relationsEval.getTp().keySet()) {
             RelationEval a = (RelationEval) e;
             RelationEval p = (RelationEval) relationsEval.getTp().get(e);
-            String aType = extractor.getType(a);
-            String pType = extractor.getType(p);
-            if (aType.equals(pType)) {
-                evaluation.addTp(aType);
-            } else {
-                evaluation.addFn(aType);
-                evaluation.addFp(pType);
+            String aType = extractor.getType(a, true);
+            String pType = extractor.getType(p, false);
+            if (aType != null) {
+                if (aType.equals(pType)) {
+                    evaluation.addTp(aType);
+                } else {
+                    evaluation.addFn(aType);
+                    evaluation.addFp(pType);
+                }
             }
-        }
-
-        for (SpRLEval e : relationsEval.getFp()) {
-            RelationEval re = (RelationEval) e;
-            evaluation.addFp(extractor.getType(re));
         }
 
         for (SpRLEval e : relationsEval.getFn()) {
             RelationEval re = (RelationEval) e;
-            evaluation.addFn(extractor.getType(re));
+            evaluation.addFn(extractor.getType(re, true));
+        }
+
+        for (SpRLEval e : relationsEval.getFp()) {
+            RelationEval re = (RelationEval) e;
+            if (evaluation.containsLabel(extractor.getType(re, false)))
+                evaluation.addFp(extractor.getType(re, false));
         }
 
         return evaluation.getEvaluations();

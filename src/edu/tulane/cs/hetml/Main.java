@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 
 public class Main {
@@ -25,8 +26,6 @@ public class Main {
     private static String predictedFile;
     private static File outputFile;
     private static String matchingType;
-    private static SpRL2017Document actualDoc;
-    private static SpRL2017Document predictedDoc;
     private static EvalComparer comparer;
     private static FileOutputStream outputStream;
 
@@ -50,10 +49,10 @@ public class Main {
         printResults("Specific Type results", specificTypeResults);
 
         List<SpRLEvaluation> rcc8Results = evaluator.evaluateRelationRCC8(relEval);
-        printResults("RCC8 results", rcc8Results);
+        printResults("Specific Value results", rcc8Results);
 
-        List<SpRLEvaluation> forResults = evaluator.evaluateRelationFoR(relEval);
-        printResults("FoR results", forResults);
+//        List<SpRLEvaluation> forResults = evaluator.evaluateRelationFoR(relEval);
+//        printResults("FoR results", forResults);
 
         outputStream.close();
     }
@@ -69,12 +68,12 @@ public class Main {
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
-            actualDoc = (SpRL2017Document) jaxbUnmarshaller.unmarshal(new File(file1));
-            predictedDoc = (SpRL2017Document) jaxbUnmarshaller.unmarshal(new File(file2));
-            Scene lastScene = actualDoc.getScenes().get(actualDoc.getScenes().size() - 1);
+            SpRL2017Document doc1 = (SpRL2017Document) jaxbUnmarshaller.unmarshal(new File(file1));
+            SpRL2017Document doc2 = (SpRL2017Document) jaxbUnmarshaller.unmarshal(new File(file2));
+            Scene lastScene = doc1.getScenes().get(doc1.getScenes().size() - 1);
             Sentence lastSentence = lastScene.getSentences().get(lastScene.getSentences().size() - 1);
             int offset = lastSentence.getEnd() + 1;
-            for (Scene s : predictedDoc.getScenes())
+            for (Scene s : doc2.getScenes())
                 for (Sentence sentence : s.getSentences()) {
                     sentence.setStart(offset + sentence.getStart());
                     sentence.setEnd(offset + sentence.getEnd());
@@ -92,8 +91,8 @@ public class Main {
                     }
                 }
             SpRL2017Document all = new SpRL2017Document();
-            all.setScenes(actualDoc.getScenes());
-            all.getScenes().addAll(predictedDoc.getScenes());
+            all.setScenes(doc1.getScenes());
+            all.getScenes().addAll(doc2.getScenes());
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.marshal(all, new File(resultFile));
 
