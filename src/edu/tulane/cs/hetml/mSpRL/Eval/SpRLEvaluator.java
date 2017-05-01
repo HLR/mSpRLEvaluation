@@ -84,14 +84,14 @@ public class SpRLEvaluator {
 
     public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
         return evaluateRelationType(relationsEval,
-                (e, isActual) -> isActual && e.getGeneralType()
-                        .equalsIgnoreCase("distance") ? null : toUpper(e.getSpecificType()));
+                (e, isActual) -> isActual && e.getGeneralType().toLowerCase()
+                        .contains("distance") ? null : toUpper(e.getSpecificType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
         return evaluateRelationType(relationsEval,
-                (e, isActual) -> isActual && e.getGeneralType()
-                        .equalsIgnoreCase("distance") ? null : toUpper(e.getRCC8()));
+                (e, isActual) -> isActual && e.getGeneralType().toLowerCase()
+                        .contains("distance") ? null : toUpper(e.getRCC8()));
     }
 
     public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {
