@@ -84,14 +84,14 @@ public class SpRLEvaluator {
 
     public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
         return evaluateRelationType(relationsEval,
-                (e, isActual) -> isActual && e.getGeneralType().toLowerCase()
-                        .contains("distance") ? null : toUpper(e.getSpecificType()));
+                (e, isActual) -> isActual && isDistanceRelation(e) ? null : // ignore distance relations by returning null
+                        toUpper(e.getSpecificType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
         return evaluateRelationType(relationsEval,
-                (e, isActual) -> isActual && e.getGeneralType().toLowerCase()
-                        .contains("distance") ? null : toUpper(e.getRCC8()));
+                (e, isActual) -> isActual && isDistanceRelation(e) ? null : // ignore distance relations by returning null
+                        toUpper(e.getRCC8()));
     }
 
     public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {
@@ -215,6 +215,10 @@ public class SpRLEvaluator {
 
     private static String toUpper(String s) {
         return s == null ? null : s.toUpperCase();
+    }
+
+    private static boolean isDistanceRelation(RelationEval e) {
+        return e != null && e.getGeneralType().toUpperCase().contains("DISTANCE");
     }
 
 }
