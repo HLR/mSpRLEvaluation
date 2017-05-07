@@ -1,18 +1,7 @@
 package edu.tulane.cs.hetml;
 
 import edu.tulane.cs.hetml.mSpRL.Eval.*;
-import edu.tulane.cs.hetml.mSpRL.SpRL2013.LANDMARK;
-import edu.tulane.cs.hetml.mSpRL.SpRL2013.RELATION;
-import edu.tulane.cs.hetml.mSpRL.SpRL2013.SPATIALINDICATOR;
-import edu.tulane.cs.hetml.mSpRL.SpRL2013.TRAJECTOR;
-import edu.tulane.cs.hetml.mSpRL.SpRL2017.Scene;
-import edu.tulane.cs.hetml.mSpRL.SpRL2017.Sentence;
-import edu.tulane.cs.hetml.mSpRL.SpRL2017.SpRL2017Document;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -43,7 +32,7 @@ public class Main {
         SpRLEvaluation relEval = relationResults.get(0);
         SpRLEvaluation nonDistanceEval = new SpRLEvaluation("Non-Distance", 0, 0, 0, 0, 0);
         SpRLEvaluation nonDistanceAndMultiEval = new SpRLEvaluation("Non-Distance", 0, 0, 0, 0, 0);
-        setFilterRelations(relEval, nonDistanceEval, nonDistanceAndMultiEval);
+        setFilteredRelations(relEval, nonDistanceEval, nonDistanceAndMultiEval);
 
         List<SpRLEvaluation> generalTypeResults = evaluator.evaluateRelationGeneralType(relEval);
         printResults("General Type results", generalTypeResults);
@@ -68,7 +57,7 @@ public class Main {
         outputStream.close();
     }
 
-    private static void setFilterRelations(SpRLEvaluation relEval, SpRLEvaluation nonDistanceEval, SpRLEvaluation nonDistanceAndMultiEval) {
+    private static void setFilteredRelations(SpRLEvaluation relEval, SpRLEvaluation nonDistanceEval, SpRLEvaluation nonDistanceAndMultiEval) {
         relEval.getFn().forEach(r -> {
             RelationEval e = (RelationEval) r;
             if (!e.getGeneralType().toUpperCase().contains("DISTANCE")) {
