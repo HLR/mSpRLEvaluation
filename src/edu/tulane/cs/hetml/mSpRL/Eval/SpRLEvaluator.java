@@ -116,13 +116,11 @@ public class SpRLEvaluator {
     }
 
     public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval,
-                (e, isActual) -> toUpper(e.getSpecificType()));
+        return evaluateRelationType(relationsEval, (e, isActual) -> toUpper(e.getSpecificType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
-        return evaluateRelationType(relationsEval,
-                (e, isActual) -> toUpper(e.getRCC8()));
+        return evaluateRelationType(relationsEval, (e, isActual) -> toUpper(e.getRCC8()));
     }
 
     public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {

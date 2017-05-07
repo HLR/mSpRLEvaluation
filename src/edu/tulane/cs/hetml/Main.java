@@ -94,46 +94,6 @@ public class Main {
         SpRLEvaluator.printEvaluation(caption, outputStream, evals);
     }
 
-    private static void combine(String file1, String file2, String resultFile) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(SpRL2017Document.class);
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            Marshaller marshaller = jaxbContext.createMarshaller();
-
-            SpRL2017Document doc1 = (SpRL2017Document) jaxbUnmarshaller.unmarshal(new File(file1));
-            SpRL2017Document doc2 = (SpRL2017Document) jaxbUnmarshaller.unmarshal(new File(file2));
-            Scene lastScene = doc1.getScenes().get(doc1.getScenes().size() - 1);
-            Sentence lastSentence = lastScene.getSentences().get(lastScene.getSentences().size() - 1);
-            int offset = lastSentence.getEnd() + 1;
-            for (Scene s : doc2.getScenes())
-                for (Sentence sentence : s.getSentences()) {
-                    sentence.setStart(offset + sentence.getStart());
-                    sentence.setEnd(offset + sentence.getEnd());
-                    for (LANDMARK l : sentence.getLandmarks())
-                        l.setId("2_" + l.getId());
-                    for (SPATIALINDICATOR sp : sentence.getSpatialindicators())
-                        sp.setId("2_" + sp.getId());
-                    for (TRAJECTOR t : sentence.getTrajectors())
-                        t.setId("2_" + t.getId());
-                    for (RELATION r : sentence.getRelations()) {
-                        r.setTrajectorId("2_" + r.getTrajectorId());
-                        r.setLandmarkId("2_" + r.getLandmarkId());
-                        r.setSpatialIndicatorId("2_" + r.getSpatialIndicatorId());
-                        r.setId("2_" + r.getId());
-                    }
-                }
-            SpRL2017Document all = new SpRL2017Document();
-            all.setScenes(doc1.getScenes());
-            all.getScenes().addAll(doc2.getScenes());
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            marshaller.marshal(all, new File(resultFile));
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
     private static void readArgs(String[] args) {
         if (args.length != 5) {
             error("Usage: mSpRLEval actual.xml predicted.xml output.txt matching(o:overlap/e:exact) specifiTypeEvaluation(a:all/ex-d:exclude distance/ex-dm: exclude distance amd multi label)");
