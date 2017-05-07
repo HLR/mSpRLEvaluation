@@ -47,7 +47,40 @@ public class SpRLEvaluator {
                     e.getPredictedCount()
             );
         }
+        printOverall(outputStream, eval);
+    }
+
+    public static void printOverall(OutputStream outputStream, List<SpRLEvaluation> eval) {
+        PrintStream out = new PrintStream(outputStream, true);
         out.println(repeat("-", 75));
+        SpRLEvaluation e = getOverall(eval);
+        out.printf("%-20s %-10.3f %-10.3f %-10.3f %-10d %-10d\n",
+                "Overall",
+                e.getPrecision(),
+                e.getRecall(),
+                e.getF1(),
+                e.getLabeledCount(),
+                e.getPredictedCount()
+        );
+        out.println(repeat("-", 75));
+    }
+
+    public static SpRLEvaluation getOverall(List<SpRLEvaluation> evals) {
+        double precision = 0, recall = 0, f1 = 0;
+        int labeledCount = 0, predictedCount = 0;
+        for (SpRLEvaluation e : evals) {
+            precision += e.getLabeledCount() * e.getPrecision();
+            recall += e.getLabeledCount() * e.getRecall();
+            f1 += e.getLabeledCount() * e.getF1();
+            labeledCount += e.getLabeledCount();
+            predictedCount += e.getPredictedCount();
+        }
+        if (labeledCount > 0) {
+            precision /= labeledCount;
+            recall /= labeledCount;
+            f1 /= labeledCount;
+        }
+        return new SpRLEvaluation("Overall", precision, recall, f1, labeledCount, predictedCount);
     }
 
     public List<SpRLEvaluation> evaluateRoles(RolesEvalDocument actual, RolesEvalDocument predicted) {
@@ -84,14 +117,12 @@ public class SpRLEvaluator {
 
     public List<SpRLEvaluation> evaluateRelationSpecificType(SpRLEvaluation relationsEval) {
         return evaluateRelationType(relationsEval,
-                (e, isActual) -> isActual && isDistanceRelation(e) ? null : // ignore distance relations by returning null
-                        toUpper(e.getSpecificType()));
+                (e, isActual) -> toUpper(e.getSpecificType()));
     }
 
     public List<SpRLEvaluation> evaluateRelationRCC8(SpRLEvaluation relationsEval) {
         return evaluateRelationType(relationsEval,
-                (e, isActual) -> isActual && isDistanceRelation(e) ? null : // ignore distance relations by returning null
-                        toUpper(e.getRCC8()));
+                (e, isActual) -> toUpper(e.getRCC8()));
     }
 
     public List<SpRLEvaluation> evaluateRelationFoR(SpRLEvaluation relationsEval) {
@@ -187,11 +218,11 @@ public class SpRLEvaluator {
     }
 
     public static double getRecall(int tp, double fn) {
-        return tp == 0 ? 0 : (double) tp / (tp + fn) * 100;
+        return tp == 0 ? (fn == 0 ? 100 : 0) : (double) tp / (tp + fn) * 100;
     }
 
     public static double getPrecision(int tp, int fp) {
-        return tp == 0 ? 0 : (double) tp / (tp + fp) * 100;
+        return tp == 0 ? (fp == 0 ? 100 : 0) : (double) tp / (tp + fp) * 100;
     }
 
     private <T extends SpRLEval> List<T> distinct(List<T> l) {
