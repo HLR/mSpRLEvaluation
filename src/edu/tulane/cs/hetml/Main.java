@@ -85,7 +85,8 @@ public class Main {
 
     private static void readArgs(String[] args) {
         if (args.length != 5) {
-            error("Usage: mSpRLEval actual.xml predicted.xml output.txt matching(o:overlap/e:exact) specifiTypeEvaluation(a:all/ex-d:exclude distance/ex-dm: exclude distance amd multi label)");
+            error("Usage: mSpRLEval actual.xml predicted.xml output.txt matching(o:overlap/e:exact) " +
+                    "specifiTypeEvaluation(a:all/ex-d:exclude distance/ex-dm: exclude distance amd multi label)");
         }
 
         actualFile = args[0];
