@@ -57,19 +57,18 @@ public class Main {
 
     private static void removeDistanceSpecificValues(SpRLEvaluation relEval, List<SpRLEvaluation> rcc8Results) {
         HashSet<String> distanceLabels = getSpecificValues(relEval, "DISTANCE");
-        for (int i = rcc8Results.size() - 1; i >= 0; i--) {
-            SpRLEvaluation e = rcc8Results.get(i);
-            if (distanceLabels.contains(e.getLabel().toUpperCase())) {
-                rcc8Results.remove(e);
-            }
-        }
+        removeEvaluations(rcc8Results, distanceLabels);
     }
 
     private static void removeMultiLabeledSpecificValues(SpRLEvaluation relEval, List<SpRLEvaluation> rcc8Results) {
         HashSet<String> multiLabels = getSpecificValues(relEval, "/");
+        removeEvaluations(rcc8Results, multiLabels);
+    }
+
+    private static void removeEvaluations(List<SpRLEvaluation> rcc8Results, HashSet<String> distanceLabels) {
         for (int i = rcc8Results.size() - 1; i >= 0; i--) {
             SpRLEvaluation e = rcc8Results.get(i);
-            if (multiLabels.contains(e.getLabel().toUpperCase())) {
+            if (distanceLabels.contains(e.getLabel().toUpperCase())) {
                 rcc8Results.remove(e);
             }
         }
