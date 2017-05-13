@@ -65,10 +65,10 @@ public class Main {
         removeEvaluations(rcc8Results, multiLabels);
     }
 
-    private static void removeEvaluations(List<SpRLEvaluation> rcc8Results, HashSet<String> distanceLabels) {
+    private static void removeEvaluations(List<SpRLEvaluation> rcc8Results, HashSet<String> labelsToRemove) {
         for (int i = rcc8Results.size() - 1; i >= 0; i--) {
             SpRLEvaluation e = rcc8Results.get(i);
-            if (distanceLabels.contains(e.getLabel().toUpperCase())) {
+            if (labelsToRemove.contains(e.getLabel().toUpperCase())) {
                 rcc8Results.remove(e);
             }
         }
