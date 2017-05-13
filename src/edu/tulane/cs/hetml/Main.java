@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 
 public class Main {
@@ -30,52 +31,65 @@ public class Main {
         printResults("Relation results", relationResults);
 
         SpRLEvaluation relEval = relationResults.get(0);
-        SpRLEvaluation nonDistanceEval = new SpRLEvaluation("Non-Distance", 0, 0, 0, 0, 0);
-        SpRLEvaluation nonDistanceAndMultiEval = new SpRLEvaluation("Non-Distance", 0, 0, 0, 0, 0);
-        setFilteredRelations(relEval, nonDistanceEval, nonDistanceAndMultiEval);
 
         List<SpRLEvaluation> generalTypeResults = evaluator.evaluateRelationGeneralType(relEval);
         printResults("General Type results", generalTypeResults);
 
+        List<SpRLEvaluation> rcc8Results = evaluator.evaluateRelationRCC8(relEval);
         switch (specificTypeEval) {
             case "a":
-                List<SpRLEvaluation> rcc8Results = evaluator.evaluateRelationRCC8(relEval);
                 printResults("Specific Value results", rcc8Results);
                 break;
 
             case "ex-d":
-                List<SpRLEvaluation> nonDistanceRcc8Results = evaluator.evaluateRelationRCC8(nonDistanceEval);
-                printResults("Specific Value results(distance relations excluded)", nonDistanceRcc8Results);
+                removeDistanceSpecificValues(relEval, rcc8Results);
+                printResults("Specific Value results(distance relations excluded)", rcc8Results);
                 break;
 
             case "ex-dm":
-                List<SpRLEvaluation> nonDistanceAndMultiRcc8Results = evaluator.evaluateRelationRCC8(nonDistanceAndMultiEval);
-                printResults("Specific Value results(distance and multi-label relations excluded)",
-                        nonDistanceAndMultiRcc8Results);
+                removeDistanceSpecificValues(relEval, rcc8Results);
+                removeMultiLabeledSpecificValues(relEval, rcc8Results);
+                printResults("Specific Value results(distance and multi-label relations excluded)", rcc8Results);
                 break;
         }
         outputStream.close();
     }
 
-    private static void setFilteredRelations(SpRLEvaluation relEval, SpRLEvaluation nonDistanceEval, SpRLEvaluation nonDistanceAndMultiEval) {
+    private static void removeDistanceSpecificValues(SpRLEvaluation relEval, List<SpRLEvaluation> rcc8Results) {
+        HashSet<String> distanceLabels = getSpecificValues(relEval, "DISTANCE");
+        for (int i = rcc8Results.size() - 1; i >= 0; i--) {
+            SpRLEvaluation e = rcc8Results.get(i);
+            if (distanceLabels.contains(e.getLabel().toUpperCase())) {
+                rcc8Results.remove(e);
+            }
+        }
+    }
+
+    private static void removeMultiLabeledSpecificValues(SpRLEvaluation relEval, List<SpRLEvaluation> rcc8Results) {
+        HashSet<String> multiLabels = getSpecificValues(relEval, "/");
+        for (int i = rcc8Results.size() - 1; i >= 0; i--) {
+            SpRLEvaluation e = rcc8Results.get(i);
+            if (multiLabels.contains(e.getLabel().toUpperCase())) {
+                rcc8Results.remove(e);
+            }
+        }
+    }
+
+    private static HashSet<String> getSpecificValues(SpRLEvaluation relEval, String generalTypeContains) {
+        HashSet<String> labels = new HashSet<>();
         relEval.getFn().forEach(r -> {
             RelationEval e = (RelationEval) r;
-            if (!e.getGeneralType().toUpperCase().contains("DISTANCE")) {
-                nonDistanceEval.getFn().add(e);
-                if (!e.getGeneralType().contains("/")) {
-                    nonDistanceAndMultiEval.getFn().add(e);
-                }
+            if (e.getGeneralType().contains(generalTypeContains)) {
+                labels.add(e.getRCC8().toUpperCase());
             }
         });
-        relEval.getTp().keySet().forEach(r -> {
-            RelationEval e = (RelationEval) r;
-            if (!e.getGeneralType().toUpperCase().contains("DISTANCE")) {
-                nonDistanceEval.getTp().put(e, relEval.getTp().get(e));
-                if (!e.getGeneralType().contains("/")) {
-                    nonDistanceAndMultiEval.getTp().put(e, relEval.getTp().get(e));
-                }
+        relEval.getTp().forEach((a, p) -> {
+            RelationEval e = (RelationEval) a;
+            if (e.getGeneralType().toUpperCase().contains(generalTypeContains)) {
+                labels.add(e.getRCC8().toUpperCase());
             }
         });
+        return labels;
     }
 
     private static void printResults(String caption, List<SpRLEvaluation> evals) {
